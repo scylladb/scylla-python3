@@ -20,10 +20,27 @@
 # along with Scylla.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-TARGET=build/scylla-python3-package.tar.gz
+print_usage() {
+    echo "build_reloc.sh --dest build/scylla-python3-package.tar.gz"
+    echo "  --dest specify destination path"
+    exit 1
+}
 
-if [ -f "$TARGET" ]; then
-    rm "$TARGET"
+DEST=build/scylla-python3-package.tar.gz
+while [ $# -gt 0 ]; do
+    case "$1" in
+        "--dest")
+            DEST=$2
+            shift 2
+            ;;
+        *)
+            print_usage
+            ;;
+    esac
+done
+
+if [ -f "$DEST" ]; then
+    rm "$DEST"
 fi
 
 ./SCYLLA-VERSION-GEN
@@ -31,4 +48,4 @@ mkdir -p build/python3
 ./dist/debian/debian_files_gen.py
 
 PACKAGES="python3-pyyaml python3-urwid python3-pyparsing python3-requests python3-pyudev python3-setuptools python3-psutil python3-distro"
-./scripts/create-relocatable-package.py --output "$TARGET" $PACKAGES
+./scripts/create-relocatable-package.py --output "$DEST" $PACKAGES
