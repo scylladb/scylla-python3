@@ -23,9 +23,13 @@
 print_usage() {
     echo "build_reloc.sh --dest build/scylla-python3-package.tar.gz"
     echo "  --dest specify destination path"
+    echo "  --clean clean build directory"
+    echo "  --nodeps    skip installing dependencies"
     exit 1
 }
 
+CLEAN=
+NODEPS=
 DEST=build/scylla-python3-package.tar.gz
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -33,14 +37,26 @@ while [ $# -gt 0 ]; do
             DEST=$2
             shift 2
             ;;
+        "--clean")
+            CLEAN=yes
+            shift 1
+            ;;
+        "--nodeps")
+            NODEPS=yes
+            shift 1
+            ;;
         *)
             print_usage
             ;;
     esac
 done
 
-if [ -f "$DEST" ]; then
-    rm "$DEST"
+if [ "$CLEAN" = "yes" ]; then
+    rm -rf build
+fi
+
+if [ -z "$NODEPS" ]; then
+    sudo ./install-dependencies.sh
 fi
 
 ./SCYLLA-VERSION-GEN
