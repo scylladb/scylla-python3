@@ -63,5 +63,5 @@ fi
 mkdir -p build/python3
 ./dist/debian/debian_files_gen.py
 
-PACKAGES="python3-pyyaml python3-urwid python3-pyparsing python3-requests python3-pyudev python3-setuptools python3-psutil python3-distro"
+PACKAGES="python3-pyyaml python3-urwid python3-pyparsing python3-requests python3-pyudev python3-setuptools python3-psutil python3-distro python3-cerberus"
 ./scripts/create-relocatable-package.py --output "$DEST" $PACKAGES
