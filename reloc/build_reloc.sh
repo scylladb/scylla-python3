@@ -22,17 +22,23 @@
 
 print_usage() {
     echo "build_reloc.sh --dest build/scylla-python3-package.tar.gz"
+    echo "  --packages specify python3 packages to be add on relocatable package"
     echo "  --dest specify destination path"
     echo "  --clean clean build directory"
     echo "  --nodeps    skip installing dependencies"
     exit 1
 }
 
+PACKAGES=
 CLEAN=
 NODEPS=
 DEST=build/scylla-python3-package.tar.gz
 while [ $# -gt 0 ]; do
     case "$1" in
+        "--packages")
+            PACKAGES="$2"
+            shift 2
+            ;;
         "--dest")
             DEST=$2
             shift 2
@@ -63,5 +69,4 @@ fi
 mkdir -p build/python3
 ./dist/debian/debian_files_gen.py
 
-PACKAGES="python3-pyyaml python3-urwid python3-pyparsing python3-requests python3-pyudev python3-setuptools python3-psutil python3-distro"
 ./scripts/create-relocatable-package.py --output "$DEST" $PACKAGES
