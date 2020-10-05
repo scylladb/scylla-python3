@@ -33,7 +33,6 @@ print_usage() {
 PACKAGES=
 CLEAN=
 NODEPS=
-DEST=build/scylla-python3-package.tar.gz
 VERSION_OVERRIDE=
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -75,4 +74,5 @@ fi
 mkdir -p build/python3
 ./dist/debian/debian_files_gen.py
 
+DEST=build/$(<./build/SCYLLA-PRODUCT-FILE)-python3-package.tar.gz
 ./scripts/create-relocatable-package.py --output "$DEST" $PACKAGES
