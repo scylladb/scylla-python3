@@ -7,7 +7,11 @@ print_usage() {
     echo "  --builddir specify rpmbuild directory"
     exit 1
 }
-RELOC_PKG=build/scylla-python3-package.tar.gz
+
+DEFAULT_PRODUCT=$(<build/SCYLLA-PRODUCT-FILE || true)
+DEFAULT_PRODUCT=${DEFAULT_PRODUCT:-scylla}
+RELOC_PKG=build/${DEFAULT_PRODUCT}-python3-package.tar.gz
+
 BUILDDIR=build/redhat
 while [ $# -gt 0 ]; do
     case "$1" in

@@ -8,11 +8,10 @@ print_usage() {
     exit 1
 }
 
-PRODUCT=$(cat build/SCYLLA-PRODUCT-FILE)
-SCYLLA_VERSION=$(cat build/SCYLLA-VERSION-FILE)
-SCYLLA_RELEASE=$(cat build/SCYLLA-RELEASE-FILE)
+DEFAULT_PRODUCT=$(<build/SCYLLA-PRODUCT-FILE || true)
+DEFAULT_PRODUCT=${DEFAULT_PRODUCT:-scylla}
+RELOC_PKG=build/${DEFAULT_PRODUCT}-python3-package.tar.gz
 
-RELOC_PKG=build/$PRODUCT-python3-package.tar.gz
 BUILDDIR=build/debian
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -42,9 +41,11 @@ mkdir -p "$BUILDDIR"/scylla-python3-package
 tar -C "$BUILDDIR"/scylla-python3-package -xpf "$RELOC_PKG"
 cd "$BUILDDIR"/scylla-python3-package
 
-
+PRODUCT=$(cat scylla-python3/SCYLLA-PRODUCT-FILE)
 RELOC_PKG_FULLPATH=$(readlink -f $RELOC_PKG)
 RELOC_PKG_BASENAME=$(basename $RELOC_PKG)
+SCYLLA_VERSION=$(cat scylla-python3/SCYLLA-VERSION-FILE)
+SCYLLA_RELEASE=$(cat scylla-python3/SCYLLA-RELEASE-FILE)
 
 ln -fv $RELOC_PKG_FULLPATH ../$PRODUCT-python3_$SCYLLA_VERSION-$SCYLLA_RELEASE.orig.tar.gz
 
