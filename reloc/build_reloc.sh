@@ -33,7 +33,6 @@ print_usage() {
 PACKAGES=
 CLEAN=
 NODEPS=
-DEST=build/scylla-python3-package.tar.gz
 VERSION_OVERRIDE=
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -62,6 +61,12 @@ while [ $# -gt 0 ]; do
             ;;
     esac
 done
+
+VERSION=$(./SCYLLA-VERSION-GEN ${VERSION_OVERRIDE:+ --version "$VERSION_OVERRIDE"})
+# the former command should generate build/SCYLLA-PRODUCT-FILE and some other version
+# related files
+PRODUCT=`cat build/SCYLLA-PRODUCT-FILE`
+DEST=build/$PRODUCT-python3-package.tar.gz
 
 if [ "$CLEAN" = "yes" ]; then
     rm -rf build
