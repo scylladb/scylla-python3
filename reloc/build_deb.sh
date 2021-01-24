@@ -44,7 +44,7 @@ RELOC_PKG_BASENAME=$(basename $RELOC_PKG)
 SCYLLA_VERSION=$(cat scylla-python3/SCYLLA-VERSION-FILE)
 SCYLLA_RELEASE=$(cat scylla-python3/SCYLLA-RELEASE-FILE)
 
-ln -fv $RELOC_PKG_FULLPATH ../$PRODUCT-python3_$SCYLLA_VERSION-$SCYLLA_RELEASE.orig.tar.gz
+ln -fv $RELOC_PKG_FULLPATH ../$PRODUCT-python3_${SCYLLA_VERSION/\.rc/~rc}-$SCYLLA_RELEASE.orig.tar.gz
 
 mv scylla-python3/debian debian
 debuild -rfakeroot -us -uc
