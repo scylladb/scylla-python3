@@ -82,7 +82,10 @@ def should_copy(f):
     if el != "/":
         raise RuntimeError("unexpected path: not absolute! {}".format(f))
 
-    if len(parts) > 0 and parts[0] == "usr":
+    if len(parts) >= 2 and parts[0] == "usr" and parts[1] == "local":
+        parts.pop(0)
+        parts.pop(0)
+    elif len(parts) > 0 and parts[0] == "usr":
         parts.pop(0)
 
     if not parts:
@@ -167,6 +170,8 @@ def copy_file_to_python_env(ar, f):
         # a package for the wrong arch. So we need to handle both /lib and /lib64. Copying files
         # blindly from /lib could be a problem, but we filtered out all the i686 packages during
         # the dependency generation.
+        if libfile.startswith("/usr/local/"):
+            libfile = libfile.replace("/usr/local/", "/", 1)
         if libfile.startswith("/usr/"):
             libfile = libfile.replace("/usr/", "/", 1)
         if libfile.startswith("/lib/"):
