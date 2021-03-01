@@ -33,6 +33,7 @@ import sys
 import tarfile
 from tempfile import mkstemp
 import magic
+import re
 
 
 RELOC_PREFIX='scylla-python3'
@@ -249,16 +250,40 @@ def generate_file_list(executables):
 
     return [x for x in set(candidates) - set(exclusions) if should_copy(x)]
 
+def pip_generate_file_list(package_list):
+    candidates = []
+    for pkg in package_list:
+        pip_info = subprocess.check_output(['pip3','show', '-f', pkg], universal_newlines=True).splitlines()
+        location = None
+        files_found = False
+        for l in pip_info:
+            if files_found:
+                if not location:
+                    print(f'Location does not found on pip show -f {pkg}')
+                    sys.exit(1)
+                candidates.append(str(pathlib.PurePath(location) / l.lstrip()))
+            else:
+                m = re.match(r'^Location:\s(.+)$', l)
+                if m:
+                    location = m[1]
+                m = re.match(r'^Files:$', l)
+                if m:
+                    files_found = True
+    return [x for x in candidates if should_copy(x)]
+
+
 ap = argparse.ArgumentParser(description='Create a relocatable python3 interpreter.')
 ap.add_argument('--output', required=True,
                 help='Destination file (tar format)')
-ap.add_argument('modules', nargs='*', help='list of python modules to add, separated by spaces')
+ap.add_argument('--pip-modules', nargs='*', help='list of pip modules to add, separated by spaces')
+ap.add_argument('--modules', nargs='*', help='list of python modules to add, separated by spaces')
 
 args = ap.parse_args()
 packages= ["python3"] + args.modules
+ar = tarfile.open(args.output, mode='w|gz')
 
 file_list = generate_file_list(dependencies(packages))
-ar = tarfile.open(args.output, mode='w|gz')
+pip_file_list = pip_generate_file_list(args.pip_modules)
 # relocatable package format version = 2
 with open('build/.relocatable_package_version', 'w') as f:
     f.write('2\n')
@@ -280,6 +305,9 @@ for p in ['pyhton3-libs'] + packages:
             ar.reloc_add(f, arcname='licenses/{}/{}'.format(p, f.name))
 
 for f in file_list:
+    copy_file_to_python_env(ar, f)
+
+for f in pip_file_list:
     copy_file_to_python_env(ar, f)
 
 ar.close()
