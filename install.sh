@@ -30,6 +30,7 @@ Options:
   --root /path/to/root     alternative install root (default /)
   --prefix /prefix         directory prefix (default /usr)
   --nonroot                shortcut of '--disttype nonroot'
+  --supervisor             enable supervisor to manage scylla processes
   --help                   this helpful message
 EOF
     exit 1
@@ -37,6 +38,7 @@ EOF
 
 root=/
 nonroot=false
+supervisor=false
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -50,6 +52,10 @@ while [ $# -gt 0 ]; do
             ;;
         "--nonroot")
             nonroot=true
+            shift 1
+            ;;
+        "--supervisor")
+            supervisor=true
             shift 1
             ;;
         "--help")
