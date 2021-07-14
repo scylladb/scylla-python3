@@ -261,6 +261,8 @@ def pip_generate_file_list(package_list):
                 if not location:
                     print(f'Location does not found on pip show -f {pkg}')
                     sys.exit(1)
+                if l.lstrip().startswith('..'):
+                    continue
                 candidates.append(str(pathlib.PurePath(location) / l.lstrip()))
             else:
                 m = re.match(r'^Location:\s(.+)$', l)
