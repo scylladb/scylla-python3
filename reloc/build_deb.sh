@@ -32,8 +32,7 @@ if [ ! -e $RELOC_PKG ]; then
     exit 1
 fi
 RELOC_PKG=$(readlink -f $RELOC_PKG)
-BUILDDIR=$(readlink -f "$BUILDDIR")
-rm -rf "$BUILDDIR"/scylla-python3-package
+rm -rf "$BUILDDIR"/scylla-python3-package "$BUILDDIR"/scylla-python3-package.orig "$BUILDDIR"/debian
 mkdir -p "$BUILDDIR"/scylla-python3-package
 tar -C "$BUILDDIR"/scylla-python3-package -xpf "$RELOC_PKG"
 cd "$BUILDDIR"/scylla-python3-package
