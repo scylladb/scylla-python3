@@ -6,7 +6,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 print_usage() {
-    echo "build_reloc.sh --dest build/scylla-python3-package.tar.gz"
+    echo "build_reloc.sh --dest build/scylla-python3.tar.gz"
     echo "  --packages specify python3 packages to be add on relocatable package"
     echo "  --pip-packages specify pip packages to be add on relocatable package"
     echo "  --dest specify destination path"
@@ -57,7 +57,7 @@ VERSION=$(./SCYLLA-VERSION-GEN ${VERSION_OVERRIDE:+ --version "$VERSION_OVERRIDE
 # the former command should generate build/SCYLLA-PRODUCT-FILE and some other version
 # related files
 PRODUCT=`cat build/SCYLLA-PRODUCT-FILE`
-DEST=build/$PRODUCT-python3-$(arch)-package.tar.gz
+DEST=build/$PRODUCT-python3-$(arch).tar.gz
 
 if [ "$CLEAN" = "yes" ]; then
     rm -rf build
