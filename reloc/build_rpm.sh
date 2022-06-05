@@ -33,13 +33,14 @@ fi
 RELOC_PKG=$(readlink -f $RELOC_PKG)
 RPMBUILD=$(readlink -f $BUILDDIR)
 mkdir -p $BUILDDIR/scylla-python3
-tar -C $BUILDDIR -xpf $RELOC_PKG scylla-python3/SCYLLA-RELOCATABLE-FILE scylla-python3/SCYLLA-RELEASE-FILE scylla-python3/SCYLLA-VERSION-FILE scylla-python3/SCYLLA-PRODUCT-FILE scylla-python3/dist/redhat
+tar -C $BUILDDIR -xpf $RELOC_PKG scylla-python3/SCYLLA-RELOCATABLE-FILE scylla-python3/SCYLLA-RELEASE-FILE scylla-python3/SCYLLA-VERSION-FILE scylla-python3/SCYLLA-PRODUCT-FILE scylla-python3/SCYLLA-PYTHON3-PIP-SYMLINKS-FILE scylla-python3/dist/redhat
 cd $BUILDDIR/scylla-python3
 
 RELOC_PKG_BASENAME=$(basename "$RELOC_PKG")
 SCYLLA_VERSION=$(cat SCYLLA-VERSION-FILE)
 SCYLLA_RELEASE=$(cat SCYLLA-RELEASE-FILE)
 PRODUCT=$(cat SCYLLA-PRODUCT-FILE)
+PIP_SYMLINKS=$(cat SCYLLA-PYTHON3-PIP-SYMLINKS-FILE)
 
 RPMBUILD=$(readlink -f ../)
 mkdir -p "$RPMBUILD"/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
@@ -51,6 +52,9 @@ parameters=(
     -D"target /opt/scylladb/python3"
     -D"reloc_pkg $RELOC_PKG_BASENAME"
 )
+if [ -n "$PIP_SYMLINKS" ]; then
+    parameters+=(-D"has_bindir true")
+fi
 
 ln -fv "$RELOC_PKG" "$RPMBUILD"/SOURCES/
 cp dist/redhat/python.spec "$RPMBUILD"/SPECS/

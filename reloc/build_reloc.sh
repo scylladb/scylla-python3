@@ -9,6 +9,7 @@ print_usage() {
     echo "build_reloc.sh --dest build/scylla-python3-package.tar.gz"
     echo "  --packages specify python3 packages to be add on relocatable package"
     echo "  --pip-packages specify pip packages to be add on relocatable package"
+    echo "  --pip-symlinks specify pip provided commands which need to install to /usr/bin"
     echo "  --dest specify destination path"
     echo "  --clean clean build directory"
     echo "  --nodeps    skip installing dependencies"
@@ -18,6 +19,7 @@ print_usage() {
 
 PACKAGES=
 PIP_PACKAGES=
+PIP_SYMLINKS=
 CLEAN=
 NODEPS=
 VERSION_OVERRIDE=
@@ -29,6 +31,10 @@ while [ $# -gt 0 ]; do
             ;;
         "--pip-packages")
             PIP_PACKAGES="$2"
+            shift 2
+            ;;
+        "--pip-symlinks")
+            PIP_SYMLINKS="$2"
             shift 2
             ;;
         "--dest")
@@ -68,6 +74,7 @@ if [ -z "$NODEPS" ]; then
 fi
 
 ./SCYLLA-VERSION-GEN ${VERSION_OVERRIDE:+ --version "$VERSION_OVERRIDE"}
+echo "$PIP_SYMLINKS" > build/SCYLLA-PYTHON3-PIP-SYMLINKS-FILE
 mkdir -p build/python3
 ./dist/debian/debian_files_gen.py
 
