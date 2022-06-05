@@ -31,6 +31,7 @@ operate are shipped with it.
 %files
 %dir %{target}
 %{target}/*
+%{_bindir}/*
 
 %changelog
 

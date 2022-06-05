@@ -19,6 +19,7 @@ import tarfile
 from tempfile import mkstemp
 import magic
 import re
+import collections
 
 
 RELOC_PREFIX='scylla-python3'
@@ -146,10 +147,27 @@ PYTHONPATH="$d/{sitepackages}:$d/{sitepackages64}:$PYTHONPATH" exec -a "$0" "$ld
     ti.linkname = pybin
     ar.reloc_addfile(ti)
 
-def copy_file_to_python_env(ar, f):
+def fixup_shebang(script):
+    obj = io.BytesIO()
+    with open(script) as f:
+        firstline = f.readline()
+        shebang = "#!/usr/bin/env python3\n"
+        obj.write(shebang.encode())
+        for l in f:
+            obj.write(l.encode())
+    obj.seek(0)
+    return obj
+
+def copy_file_to_python_env(ar, f, pip_binfile=False):
     if f.startswith("/usr/bin/python"):
         gen_python_thunk(ar, os.path.basename(f))
         fix_python_binary(ar, f)
+    elif pip_binfile:
+        obj = fixup_shebang(f)
+        ti = tarfile.TarInfo(name=os.path.join("bin", os.path.basename(f)))
+        ti.size = obj.getbuffer().nbytes
+        ti.mode = 0o755
+        ar.reloc_addfile(ti, fileobj=obj)
     else:
         libfile = f
         # python tends to install in both /usr/lib and /usr/lib64, which doesn't mean it is
@@ -237,18 +255,22 @@ def generate_file_list(executables):
 
 def pip_generate_file_list(package_list):
     candidates = []
+    PIPPackageEntry = collections.namedtuple('PIPPackageEntry', ['path', 'binfile'])
     for pkg in package_list:
         pip_info = subprocess.check_output(['pip3','show', '-f', pkg], universal_newlines=True).splitlines()
         location = None
         files_found = False
         for l in pip_info:
+            binfile = False
             if files_found:
                 if not location:
                     print(f'Location does not found on pip show -f {pkg}')
                     sys.exit(1)
-                if l.lstrip().startswith('..'):
-                    continue
-                candidates.append(str(pathlib.PurePath(location) / l.lstrip()))
+                # We need to modify bin files to run in relocatable python3
+                if l.lstrip().startswith('../../../bin/'):
+                    binfile = True
+                e = PIPPackageEntry(str(pathlib.PurePath(location) / l.lstrip()), binfile=binfile)
+                candidates.append(e)
             else:
                 m = re.match(r'^Location:\s(.+)$', l)
                 if m:
@@ -256,7 +278,7 @@ def pip_generate_file_list(package_list):
                 m = re.match(r'^Files:$', l)
                 if m:
                     files_found = True
-    return [x for x in candidates if should_copy(x)]
+    return [x for x in candidates if should_copy(x.path)]
 
 
 ap = argparse.ArgumentParser(description='Create a relocatable python3 interpreter.')
@@ -283,6 +305,7 @@ ar.reloc_add('dist/debian')
 ar.reloc_add('build/SCYLLA-RELEASE-FILE', arcname='SCYLLA-RELEASE-FILE')
 ar.reloc_add('build/SCYLLA-VERSION-FILE', arcname='SCYLLA-VERSION-FILE')
 ar.reloc_add('build/SCYLLA-PRODUCT-FILE', arcname='SCYLLA-PRODUCT-FILE')
+ar.reloc_add('build/SCYLLA-PYTHON3-PIP-SYMLINKS-FILE', arcname='SCYLLA-PYTHON3-PIP-SYMLINKS-FILE')
 ar.reloc_add('install.sh')
 ar.reloc_add('build/debian/debian', arcname='debian')
 for p in ['pyhton3-libs'] + packages:
@@ -294,7 +317,7 @@ for p in ['pyhton3-libs'] + packages:
 for f in file_list:
     copy_file_to_python_env(ar, f)
 
-for f in pip_file_list:
-    copy_file_to_python_env(ar, f)
+for e in pip_file_list:
+    copy_file_to_python_env(ar, e.path, e.binfile)
 
 ar.close()
