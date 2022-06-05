@@ -31,6 +31,9 @@ operate are shipped with it.
 %files
 %dir %{target}
 %{target}/*
+%if %{defined has_bindir}
+%{_bindir}/*
+%endif
 
 %changelog
 
