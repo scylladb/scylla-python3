@@ -64,6 +64,13 @@ def should_copy(f):
     if f.startswith("/lib64/ld-linux"): # the interpreter is copied by the binary fixup process
         return False
 
+    # Fedora 36 moved the RPM package database from /var/lib/rpm to /usr/lib/sysimage/rpm.
+    # It's not needed in the relocatable, but is causing some problems for this script
+    # (it can't deal with /usr/lib/sysimage/rpm/Packages.db being present in generate_file_list(),
+    # but not present on the filesystem under normal circumstances), so we filter it out.
+    if f.startswith("/usr/lib/sysimage"):
+        return False
+
     el = parts.pop(0)
     if el != "/":
         raise RuntimeError("unexpected path: not absolute! {}".format(f))
