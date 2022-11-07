@@ -195,7 +195,10 @@ def copy_file_to_python_env(ar, f, pip_binfile=False):
         # copy file instead of link unless we link to the current directory.
         # links to the current directory are usually safe, but because we are manipulating
         # the directory structure, very likely links that transverse paths will break.
-        if os.path.islink(f) and os.readlink(f) != os.path.basename(os.readlink(f)):
+        if not os.path.exists(f):
+            # We see libevwrapper.cpython-311-x86_64-linux-gnu.so missing for an unknown reason
+            pass
+        elif os.path.islink(f) and os.readlink(f) != os.path.basename(os.readlink(f)):
             ar.reloc_add(os.path.realpath(f), arcname=libfile)
         else:
             m = magic.detect_from_filename(f)
