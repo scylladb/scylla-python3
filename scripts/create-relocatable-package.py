@@ -318,7 +318,7 @@ ar.reloc_add('build/SCYLLA-PRODUCT-FILE', arcname='SCYLLA-PRODUCT-FILE')
 ar.reloc_add('build/SCYLLA-PYTHON3-PIP-SYMLINKS-FILE', arcname='SCYLLA-PYTHON3-PIP-SYMLINKS-FILE')
 ar.reloc_add('install.sh')
 ar.reloc_add('build/debian/debian', arcname='debian')
-for p in ['pyhton3-libs'] + packages:
+for p in ['python3-libs'] + packages:
     pdir = pathlib.Path('/usr/share/licenses/{}/'.format(p))
     if pdir.exists():
         for f in pdir.glob('*'):
