@@ -3,7 +3,6 @@ Version: %{version}
 Release: %{release}
 Summary: A standalone python3 interpreter that can be moved around different Linux machines
 AutoReqProv: no
-Provides: %{name}
 
 License: Python
 Source0: %{reloc_pkg}
