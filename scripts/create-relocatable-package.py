@@ -20,6 +20,7 @@ from tempfile import mkstemp
 import magic
 import re
 import collections
+import time
 
 
 RELOC_PREFIX='scylla-python3'
@@ -147,11 +148,13 @@ PYTHONPATH="$d/{sitepackages}:$d/{sitepackages64}:$PYTHONPATH" exec -a "$0" "$ld
     ti = tarfile.TarInfo(name=os.path.join("bin", pybin))
     ti.size = len(thunk)
     ti.mode = 0o755
+    ti.mtime = time.time()
     ar.reloc_addfile(ti, fileobj=io.BytesIO(thunk))
 
     ti = tarfile.TarInfo(name=os.path.join("bin", "python3"))
     ti.type = tarfile.SYMTYPE
     ti.linkname = pybin
+    ti.mtime = time.time()
     ar.reloc_addfile(ti)
 
 def fixup_shebang(script):
@@ -174,6 +177,7 @@ def copy_file_to_python_env(ar, f, pip_binfile=False):
         ti = tarfile.TarInfo(name=os.path.join("bin", os.path.basename(f)))
         ti.size = obj.getbuffer().nbytes
         ti.mode = 0o755
+        ti.mtime = time.time()
         ar.reloc_addfile(ti, fileobj=obj)
     else:
         libfile = f
