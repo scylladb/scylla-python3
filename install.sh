@@ -104,6 +104,7 @@ install -d -m755 "$rprefix"/python3/bin
 cp -pr ./bin/* "$rprefix"/python3/bin
 install -d -m755 "$rprefix"/python3/lib64
 cp -pr ./lib64/* "$rprefix"/python3/lib64
+install -m644 ./lib64/.*.hmac "$rprefix"/python3/lib64
 install -d -m755 "$rprefix"/python3/libexec
 cp -pr ./libexec/* "$rprefix"/python3/libexec
 install -d -m755 "$rprefix"/python3/licenses
