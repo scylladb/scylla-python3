@@ -123,10 +123,34 @@ def fix_python_binary(ar, binpath):
     ar.reloc_add(patched_binary, arcname=os.path.join("libexec", pyname + ".bin"))
     os.remove(patched_binary)
 
+def fipshmac(f):
+    DIRECTORY='build'
+    bn = os.path.basename(f)
+    subprocess.run(['fipshmac', '-d', DIRECTORY, f], check=True)
+    return f'{DIRECTORY}/{bn}.hmac'
+
+def fix_hmac(ar, binpath, targetpath, patched_binary):
+    bn = os.path.basename(binpath)
+    dn = os.path.dirname(binpath)
+    targetpath_dn = os.path.dirname(targetpath)
+    hmac = f'{dn}/.{bn}.hmac'
+    if os.path.exists(hmac):
+        assert not os.path.islink(hmac)
+        hmac = fipshmac(patched_binary)
+        hmac_arcname = f'{targetpath_dn}/.{bn}.hmac'
+        ar.reloc_add(hmac, arcname=hmac_arcname)
+    fc_hmac = f'{dn}/fipscheck/{bn}.hmac'
+    if os.path.exists(fc_hmac):
+        assert not os.path.islink(fc_hmac)
+        fc_hmac = fipshmac(patched_binary)
+        fc_hmac_arcname = f'{targetpath_dn}/fipscheck/{bn}.hmac'
+        ar.reloc_add(fc_hmac, arcname=fc_hmac_arcname)
+
 def fix_sharedlib(ar, binpath, targetpath):
     relpath =  os.path.join(os.path.relpath("lib64", targetpath), "lib64")
     patched_binary = fix_binary(ar, binpath, f'$ORIGIN/{relpath}')
     ar.reloc_add(patched_binary, arcname=targetpath)
+    fix_hmac(ar, binpath, targetpath, patched_binary)
     os.remove(patched_binary)
 
 def gen_python_thunk(ar, pybin):
@@ -169,6 +193,10 @@ def fixup_shebang(script):
     return obj
 
 def copy_file_to_python_env(ar, f, pip_binfile=False):
+    # skip adding .hmac since we will re-generate it later
+    if f.endswith('.hmac') and not os.path.islink(f):
+        return
+
     if f.startswith("/usr/bin/python"):
         gen_python_thunk(ar, os.path.basename(f))
         fix_python_binary(ar, f)
