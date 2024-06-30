@@ -104,7 +104,7 @@ def fix_binary(ar, path, libpath):
     shutil.copy2(path, patched_elf)
 
     subprocess.check_call(['patchelf',
-                           '--set-rpath',
+                           '--add-rpath',
                            libpath,
                            patched_elf])
     return patched_elf
@@ -125,7 +125,7 @@ def fix_python_binary(ar, binpath):
 
 def fix_sharedlib(ar, binpath, targetpath):
     relpath =  os.path.join(os.path.relpath("lib64", targetpath), "lib64")
-    patched_binary = fix_binary(ar, binpath, '$ORIGIN/' + relpath)
+    patched_binary = fix_binary(ar, binpath, f'$ORIGIN/{relpath}')
     ar.reloc_add(patched_binary, arcname=targetpath)
     os.remove(patched_binary)
 
