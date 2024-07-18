@@ -47,6 +47,10 @@ while [ $# -gt 0 ]; do
     esac
 done
 
+install() {
+    command install -Z "$@"
+}
+
 relocate_python3() {
     local script="$2"
     local scriptname="$(basename "$script")"
@@ -57,11 +61,11 @@ relocate_python3() {
     local pythonpath="$(dirname "$pythoncmd")"
 
     if [ ! -x "$script" ]; then
-        cp "$script" "$install"
+        install -m755 "$script" "$install"
         return
     fi
-    mkdir -p "$relocateddir"
-    cp "$script" "$relocateddir"
+    install -d -m755 "$relocateddir"
+    install -m755 "$script" "$relocateddir"
     cat > "$install"<<EOF
 #!/usr/bin/env bash
 [[ -z "\$LD_PRELOAD" ]] || { echo "\$0: not compatible with LD_PRELOAD" >&2; exit 110; }
@@ -78,7 +82,7 @@ if [ -f "\${DEBIAN_SSL_CERT_FILE}" ]; then
 fi
 PYTHONPATH="\${d}:\${d}/libexec:\$PYTHONPATH" PATH="\${d}/../bin:\${d}/$pythonpath:\${PATH}" SSL_CERT_FILE="\${c}" exec -a "\$0" "\${d}/libexec/\${b}" "\$@"
 EOF
-    chmod +x "$install"
+    chmod 755 "$install"
 }
 
 if [ -z "$prefix" ]; then
@@ -97,13 +101,13 @@ if ! $nonroot; then
 fi
 
 install -d -m755 "$rprefix"/python3/bin
-cp -r ./bin/* "$rprefix"/python3/bin
+cp -pr ./bin/* "$rprefix"/python3/bin
 install -d -m755 "$rprefix"/python3/lib64
-cp -r ./lib64/* "$rprefix"/python3/lib64
+cp -pr ./lib64/* "$rprefix"/python3/lib64
 install -d -m755 "$rprefix"/python3/libexec
-cp -r ./libexec/* "$rprefix"/python3/libexec
+cp -pr ./libexec/* "$rprefix"/python3/libexec
 install -d -m755 "$rprefix"/python3/licenses
-cp -r ./licenses/* "$rprefix"/python3/licenses
+cp -pr ./licenses/* "$rprefix"/python3/licenses
 
 PYSCRIPTS=$(find bin -maxdepth 1 -type f -exec grep -Pls '\A#!/usr/bin/env python3' {} +)
 PYSYMLINKS="$(cat ./SCYLLA-PYTHON3-PIP-SYMLINKS-FILE)"
