@@ -3,6 +3,8 @@ Version: %{version}
 Release: %{release}
 Summary: A standalone python3 interpreter that can be moved around different Linux machines
 AutoReqProv: no
+Provides:       scylla-enterprise-python3 = %{version}-%{release}
+Obsoletes:      scylla-enterprise-python3 < 2025.1.0
 
 License: Python
 Source0: %{reloc_pkg}

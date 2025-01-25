@@ -9,9 +9,20 @@ Rules-Requires-Root: no
 
 Package: %{product}-python3
 Architecture: any
+Replaces: scylla-enterprise-python3 (<< 2025.1.0~)
+Breaks: scylla-enterprise-python3 (<< 2025.1.0~)
 Description: A standalone python3 interpreter that can be moved around different Linux machines
  This is a self-contained python interpreter that can be moved around
  different Linux machines as long as they run a new enough kernel (where
  new enough is defined by whichever Python module uses any kernel
  functionality). All shared libraries needed for the interpreter to
  operate are shipped with it.
+
+
+Package: scylla-enterprise-python3
+Depends: %{product}-python3 (= ${binary:Version})
+Architecture: all
+Priority: optional
+Section: oldlibs
+Description: transitional package
+ This is a transitional package. It can safely be removed.
