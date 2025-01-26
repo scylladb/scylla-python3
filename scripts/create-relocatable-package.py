@@ -299,14 +299,15 @@ def pip_generate_file_list(package_list):
     candidates = []
     PIPPackageEntry = collections.namedtuple('PIPPackageEntry', ['path', 'binfile'])
     for pkg in package_list:
-        pip_info = subprocess.check_output(['pip3','show', '-f', pkg], universal_newlines=True).splitlines()
+        pkg_base = re.sub(r'\[.*\]', '', pkg)
+        pip_info = subprocess.check_output(['pip3','show', '-f', pkg_base], universal_newlines=True).splitlines()
         location = None
         files_found = False
         for l in pip_info:
             binfile = False
             if files_found:
                 if not location:
-                    print(f'Location does not found on pip show -f {pkg}')
+                    print(f'Location does not found on pip show -f {pkg_base}')
                     sys.exit(1)
                 # We need to modify bin files to run in relocatable python3
                 if l.lstrip().startswith('../../../bin/'):
